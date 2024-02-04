@@ -1,5 +1,6 @@
 from rest_framework import permissions
 
+
 class IsAdminUserOrReadOnly(permissions.BasePermission):
     """
     Custom permission to only allow admin users to create, update, or delete books.
