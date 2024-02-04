@@ -1,5 +1,9 @@
 from django.test import TestCase
+from django.contrib.auth.models import User
+from rest_framework.test import APITestCase
+from rest_framework import status
 from books.models import Book
+from django.urls import reverse
 
 
 class BookModelTest(TestCase):
@@ -22,3 +26,95 @@ class BookModelTest(TestCase):
         self.assertEqual(saved_book.cover, Book.CoverType.HARD)
         self.assertEqual(saved_book.inventory, 50)
         self.assertEqual(float(saved_book.daily_fee), 19.99)
+
+
+class BookViewTest(APITestCase):
+    BOOK_URL = reverse("books:book-list")
+
+    def setUp(self):
+        self.admin_user = User.objects.create_user(
+            username="admin", password="adminpassword", is_staff=True
+        )
+
+        self.user = User.objects.create_user(username="user", password="userpass")
+
+        self.book = Book.objects.create(
+            title="Sample Book",
+            author="John Doe",
+            cover=Book.CoverType.HARD,
+            inventory=50,
+            daily_fee="19.99",
+        )
+
+    def test_regular_user_list_books_permissions(self):
+        response = self.client.get(self.BOOK_URL)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_regular_user_create_book_permissions(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            self.BOOK_URL,
+            {
+                "title": "New Book",
+                "author": "Jane Doe",
+                "cover": "Hard",
+                "inventory": 30,
+                "daily_fee": "15.99",
+            },
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_admin_user_create_book_permissions(self):
+        self.client.force_login(self.admin_user)
+        response = self.client.post(
+            self.BOOK_URL,
+            {
+                "title": "New Book",
+                "author": "Jane Doe",
+                "cover": "Hard",
+                "inventory": 30,
+                "daily_fee": "15.99",
+            },
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_regular_user_update_book_permissions(self):
+        self.client.force_login(self.user)
+        response = self.client.put(
+            reverse("books:book-detail", kwargs={"pk": self.book.id}),
+            {
+                "title": "Updated Book",
+                "author": "Jane Doe",
+                "cover": "Hard",
+                "inventory": 30,
+                "daily_fee": "15.99",
+            },
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_admin_user_update_book_permissions(self):
+        self.client.force_login(self.admin_user)
+        response = self.client.put(
+            reverse("books:book-detail", kwargs={"pk": self.book.id}),
+            {
+                "title": "Updated Book",
+                "author": "Doe",
+                "cover": "Hard",
+                "inventory": 30,
+                "daily_fee": "11.99",
+            },
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_admin_user_delete_book_permissions(self):
+        self.client.force_login(self.admin_user)
+        response = self.client.delete(
+            reverse("books:book-detail", kwargs={"pk": self.book.id})
+        )
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_regular_user_delete_book_permissions(self):
+        response = self.client.delete(
+            reverse("books:book-detail", kwargs={"pk": self.book.id})
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
