@@ -72,9 +72,7 @@ class BookViewTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_regular_user_create_book_permissions(self):
-        self.client.credentials(
-            HTTP_AUTHORIZE=f'Bearer {self.user_token["access"]}'
-        )
+        self.client.credentials(HTTP_AUTHORIZE=f'Bearer {self.user_token["access"]}')
         response = self.client.post(
             self.BOOK_URL,
             {
@@ -88,9 +86,7 @@ class BookViewTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_admin_user_create_book_permissions(self):
-        self.client.credentials(
-            HTTP_AUTHORIZE=f'Bearer {self.admin_token["access"]}'
-        )
+        self.client.credentials(HTTP_AUTHORIZE=f'Bearer {self.admin_token["access"]}')
 
         response = self.client.post(
             self.BOOK_URL,
@@ -105,9 +101,7 @@ class BookViewTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_regular_user_update_book_permissions(self):
-        self.client.credentials(
-            HTTP_AUTHORIZE=f'Bearer {self.user_token["access"]}'
-        )
+        self.client.credentials(HTTP_AUTHORIZE=f'Bearer {self.user_token["access"]}')
         response = self.client.put(
             reverse("books:book-detail", kwargs={"pk": self.book.id}),
             {
@@ -121,9 +115,7 @@ class BookViewTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_admin_user_update_book_permissions(self):
-        self.client.credentials(
-            HTTP_AUTHORIZE=f'Bearer {self.admin_token["access"]}'
-        )
+        self.client.credentials(HTTP_AUTHORIZE=f'Bearer {self.admin_token["access"]}')
         response = self.client.put(
             reverse("books:book-detail", kwargs={"pk": self.book.id}),
             {
@@ -137,18 +129,14 @@ class BookViewTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_admin_user_delete_book_permissions(self):
-        self.client.credentials(
-            HTTP_AUTHORIZE=f'Bearer {self.admin_token["access"]}'
-        )
+        self.client.credentials(HTTP_AUTHORIZE=f'Bearer {self.admin_token["access"]}')
         response = self.client.delete(
             reverse("books:book-detail", kwargs={"pk": self.book.id})
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_regular_user_delete_book_permissions(self):
-        self.client.credentials(
-            HTTP_AUTHORIZE=f'Bearer {self.user_token["access"]}'
-        )
+        self.client.credentials(HTTP_AUTHORIZE=f'Bearer {self.user_token["access"]}')
         response = self.client.delete(
             reverse("books:book-detail", kwargs={"pk": self.book.id})
         )
