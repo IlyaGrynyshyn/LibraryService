@@ -39,7 +39,9 @@ class BookViewTest(APITestCase):
             email="admin@example.com", password="adminpassword", is_staff=True
         )
 
-        self.user = user.objects.create_user(email="user@example.com", password="userpass")
+        self.user = user.objects.create_user(
+            email="user@example.com", password="userpass"
+        )
 
         self.book = Book.objects.create(
             title="Sample Book",
@@ -55,8 +57,8 @@ class BookViewTest(APITestCase):
         refresh = RefreshToken.for_user(user)
         access_token = AccessToken.for_user(user)
         return {
-            'refresh': str(refresh),
-            'access': str(access_token),
+            "refresh": str(refresh),
+            "access": str(access_token),
         }
 
     def test_list_books_permissions(self):
@@ -69,7 +71,9 @@ class BookViewTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_regular_user_create_book_permissions(self):
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.user_token["access"]}')
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {self.user_token["access"]}'
+        )
         response = self.client.post(
             self.BOOK_URL,
             {
@@ -83,7 +87,9 @@ class BookViewTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_admin_user_create_book_permissions(self):
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.admin_token["access"]}')
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {self.admin_token["access"]}'
+        )
 
         response = self.client.post(
             self.BOOK_URL,
@@ -98,7 +104,9 @@ class BookViewTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_regular_user_update_book_permissions(self):
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.user_token["access"]}')
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {self.user_token["access"]}'
+        )
         response = self.client.put(
             reverse("books:book-detail", kwargs={"pk": self.book.id}),
             {
@@ -112,7 +120,9 @@ class BookViewTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_admin_user_update_book_permissions(self):
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.admin_token["access"]}')
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {self.admin_token["access"]}'
+        )
         response = self.client.put(
             reverse("books:book-detail", kwargs={"pk": self.book.id}),
             {
@@ -126,14 +136,18 @@ class BookViewTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_admin_user_delete_book_permissions(self):
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.admin_token["access"]}')
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {self.admin_token["access"]}'
+        )
         response = self.client.delete(
             reverse("books:book-detail", kwargs={"pk": self.book.id})
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_regular_user_delete_book_permissions(self):
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.user_token["access"]}')
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {self.user_token["access"]}'
+        )
         response = self.client.delete(
             reverse("books:book-detail", kwargs={"pk": self.book.id})
         )
