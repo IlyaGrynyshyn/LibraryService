@@ -132,7 +132,7 @@ REST_FRAMEWORK = {
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
-    "HTTP_X_ACCESS_TOKEN": "Authorize",
+    "AUTH_HEADER_NAME": "HTTP_AUTHORIZE",
 }
 
 AUTH_USER_MODEL = "users.User"
