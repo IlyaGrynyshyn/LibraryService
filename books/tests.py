@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from rest_framework.test import APITestCase
@@ -72,7 +73,7 @@ class BookViewTest(APITestCase):
 
     def test_regular_user_create_book_permissions(self):
         self.client.credentials(
-            HTTP_AUTHORIZATION=f'Bearer {self.user_token["access"]}'
+            HTTP_AUTHORIZE=f'Bearer {self.user_token["access"]}'
         )
         response = self.client.post(
             self.BOOK_URL,
@@ -88,7 +89,7 @@ class BookViewTest(APITestCase):
 
     def test_admin_user_create_book_permissions(self):
         self.client.credentials(
-            HTTP_AUTHORIZATION=f'Bearer {self.admin_token["access"]}'
+            HTTP_AUTHORIZE=f'Bearer {self.admin_token["access"]}'
         )
 
         response = self.client.post(
@@ -105,7 +106,7 @@ class BookViewTest(APITestCase):
 
     def test_regular_user_update_book_permissions(self):
         self.client.credentials(
-            HTTP_AUTHORIZATION=f'Bearer {self.user_token["access"]}'
+            HTTP_AUTHORIZE=f'Bearer {self.user_token["access"]}'
         )
         response = self.client.put(
             reverse("books:book-detail", kwargs={"pk": self.book.id}),
@@ -121,7 +122,7 @@ class BookViewTest(APITestCase):
 
     def test_admin_user_update_book_permissions(self):
         self.client.credentials(
-            HTTP_AUTHORIZATION=f'Bearer {self.admin_token["access"]}'
+            HTTP_AUTHORIZE=f'Bearer {self.admin_token["access"]}'
         )
         response = self.client.put(
             reverse("books:book-detail", kwargs={"pk": self.book.id}),
@@ -137,7 +138,7 @@ class BookViewTest(APITestCase):
 
     def test_admin_user_delete_book_permissions(self):
         self.client.credentials(
-            HTTP_AUTHORIZATION=f'Bearer {self.admin_token["access"]}'
+            HTTP_AUTHORIZE=f'Bearer {self.admin_token["access"]}'
         )
         response = self.client.delete(
             reverse("books:book-detail", kwargs={"pk": self.book.id})
@@ -146,7 +147,7 @@ class BookViewTest(APITestCase):
 
     def test_regular_user_delete_book_permissions(self):
         self.client.credentials(
-            HTTP_AUTHORIZATION=f'Bearer {self.user_token["access"]}'
+            HTTP_AUTHORIZE=f'Bearer {self.user_token["access"]}'
         )
         response = self.client.delete(
             reverse("books:book-detail", kwargs={"pk": self.book.id})
