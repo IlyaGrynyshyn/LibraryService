@@ -1,5 +1,5 @@
+from django.contrib.auth import get_user_model
 from django.test import TestCase
-from django.contrib.auth.models import User
 from rest_framework.test import APITestCase
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
@@ -34,11 +34,12 @@ class BookViewTest(APITestCase):
     BOOK_URL = reverse("books:book-list")
 
     def setUp(self):
-        self.admin_user = User.objects.create_user(
-            username="admin", password="adminpassword", is_staff=True
+        user = get_user_model()
+        self.admin_user = user.objects.create_user(
+            email="admin@example.com", password="adminpassword", is_staff=True
         )
 
-        self.user = User.objects.create_user(username="user", password="userpass")
+        self.user = user.objects.create_user(email="user@example.com", password="userpass")
 
         self.book = Book.objects.create(
             title="Sample Book",
