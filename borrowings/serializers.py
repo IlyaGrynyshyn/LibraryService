@@ -21,6 +21,17 @@ class BorrowingSerializer(serializers.ModelSerializer):
             "book",
         )
 
+    def create(self, validated_data):
+        return Borrowing.objects.create(**validated_data)
+
+    def validate(self, data):
+        book = data["book"]
+        if book and book.inventory == 0:
+            raise serializers.ValidationError(
+                "Unfortunately, this book is out of stock."
+            )
+        return data
+
 
 class BorrowingDetailSerializer(BorrowingSerializer):
     book = BookSerializer(read_only=True)
