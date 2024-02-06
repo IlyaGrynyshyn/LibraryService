@@ -17,4 +17,6 @@ class BorrowingListView(viewsets.ModelViewSet):
         return Borrowing.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        updated_borrowing = serializer.save(user=self.request.user)
+        updated_borrowing.book.inventory -= 1
+        updated_borrowing.book.save()
