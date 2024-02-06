@@ -13,3 +13,7 @@ class Borrowing(models.Model):
 
     def __str__(self):
         return f"{self.borrow_date} - {self.user}"
+
+    @property
+    def is_active(self):
+        return not bool(self.actual_return_date)
