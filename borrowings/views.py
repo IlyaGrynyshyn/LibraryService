@@ -5,17 +5,22 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from borrowings.models import Borrowing
-from borrowings.serializers import BorrowingSerializer, BorrowingDetailSerializer
+from borrowings.serializers import (
+    BorrowingSerializer,
+    BorrowingDetailSerializer,
+    BorrowingListSerializer,
+)
+from books.permissions import IsAdminUserOrReadOnly
 
 
 class BorrowingListView(viewsets.ModelViewSet):
     queryset = Borrowing.objects.all()
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [BorrowingListSerializer]
 
     def get_serializer_class(self):
         if self.action == "retrieve":
             return BorrowingDetailSerializer
-        return BorrowingSerializer
+        return BorrowingListSerializer
 
     def get_queryset(self):
         is_active = self.request.query_params.get("is_active")
