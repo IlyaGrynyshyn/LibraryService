@@ -34,5 +34,9 @@ class BorrowingSerializer(serializers.ModelSerializer):
         return data
 
 
+class BorrowingListSerializer(BorrowingSerializer):
+    actual_return_date = serializers.DateField(read_only=True)
+
+
 class BorrowingDetailSerializer(BorrowingSerializer):
     book = BookSerializer(read_only=True)
