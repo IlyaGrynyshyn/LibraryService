@@ -11,6 +11,8 @@ class BookSerializer(serializers.ModelSerializer):
 
 
 class BorrowingSerializer(serializers.ModelSerializer):
+    is_active: bool = serializers.BooleanField(read_only=True)
+
     class Meta:
         model = Borrowing
         fields = (
