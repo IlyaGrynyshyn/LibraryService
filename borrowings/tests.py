@@ -8,6 +8,7 @@ from rest_framework import status
 
 from books.models import Book
 from borrowings.models import Borrowing
+from borrowings.serializers import BorrowingListSerializer
 
 
 class BorrowingModelTest(TestCase):
@@ -63,8 +64,14 @@ class BorrowingViewTests(TestCase):
             title="Sample Book",
             author="John Doe",
             cover=Book.CoverType.HARD,
-            inventory=12,
+            inventory=1,
             daily_fee="19.99",
+        )
+        self.borrowing = Borrowing.objects.create(
+            borrow_date="2022-01-01",
+            expected_return_date="2022-02-01",
+            user=self.user,
+            book=self.book,
         )
 
         self.admin_token = self.generate_jwt_token(self.admin_user)
@@ -78,8 +85,8 @@ class BorrowingViewTests(TestCase):
             "access": str(access_token),
         }
 
-    def test_create_borrowing(self):
-        self.client.credentials(HTTP_AUTHORIZE=f'Bearer {self.user_token["access"]}')
+    def test_admin_user_create_borrowing(self):
+        self.client.credentials(HTTP_AUTHORIZE=f'Bearer {self.admin_token["access"]}')
 
         initial_inventory = self.book.inventory
 
@@ -96,11 +103,11 @@ class BorrowingViewTests(TestCase):
         borrowing = Borrowing.objects.get(id=response.data["id"])
         updated_book = Book.objects.get(id=self.book.id)
 
-        self.assertEqual(borrowing.user, self.user)
+        self.assertEqual(borrowing.user, self.admin_user)
         self.assertEqual(updated_book.inventory, initial_inventory - 1)
 
     def test_create_borrowing_with_zero_inventory(self):
-        self.client.credentials(HTTP_AUTHORIZE=f'Bearer {self.user_token["access"]}')
+        self.client.credentials(HTTP_AUTHORIZE=f'Bearer {self.admin_token["access"]}')
 
         book = Book.objects.create(
             title="Test Book",
@@ -137,3 +144,41 @@ class BorrowingViewTests(TestCase):
             reverse("borrowings:borrowing-detail", kwargs={"pk": borrowing.pk})
         )
         self.assertEqual(response.status_code, 200)
+
+    def test_filter_is_active_true(self):
+        self.client.credentials(HTTP_AUTHORIZE=f'Bearer {self.admin_token["access"]}')
+
+        response = self.client.get(self.BORROWING_URL, {"is_active": "true"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        serializer = BorrowingListSerializer(
+            Borrowing.objects.filter(actual_return_date__isnull=True), many=True
+        )
+        self.assertEqual(response.data, serializer.data)
+
+    def test_filter_is_active_false(self):
+        self.client.credentials(HTTP_AUTHORIZE=f'Bearer {self.admin_token["access"]}')
+        response = self.client.get(self.BORROWING_URL, {"is_active": "false"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        serializer = BorrowingListSerializer(
+            Borrowing.objects.filter(actual_return_date__isnull=False), many=True
+        )
+        self.assertEqual(response.data, serializer.data)
+
+    def test_filter_user_id_by_admin(self):
+        self.client.credentials(HTTP_AUTHORIZE=f'Bearer {self.admin_token["access"]}')
+        response = self.client.get(self.BORROWING_URL, {"user_id": self.user.id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        serializer = BorrowingListSerializer(
+            Borrowing.objects.filter(user=self.admin_user), many=True
+        )
+        self.assertEqual(response.data, serializer.data)
+
+    def test_return_borrowing_success(self):
+        self.client.credentials(HTTP_AUTHORIZE=f'Bearer {self.admin_token["access"]}')
+        response = self.client.post(
+            reverse("borrowings:borrowing-return", kwargs={"pk": self.borrowing.id})
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.borrowing.refresh_from_db()
+        self.assertNotEquals(self.borrowing.actual_return_date, None)
+        self.assertEqual(self.borrowing.book.inventory, 2)
