@@ -1,25 +1,31 @@
 from django.db import transaction
 from django.utils import timezone
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from borrowings.models import Borrowing
+from borrowings.permissions import IsAdminUserOrReadAndCreateOnly
 from borrowings.serializers import (
     BorrowingDetailSerializer,
     BorrowingListSerializer,
 )
-from books.permissions import IsAdminUserOrReadOnly
 
 
 class BorrowingListView(viewsets.ModelViewSet):
     queryset = Borrowing.objects.all()
-    permission_classes = [IsAdminUserOrReadOnly]
+    permission_classes = [IsAdminUserOrReadAndCreateOnly]
 
     def get_serializer_class(self):
         if self.action == "retrieve":
             return BorrowingDetailSerializer
         return BorrowingListSerializer
+
+    @staticmethod
+    def _params_to_ints(qs):
+        """Converts a list of string IDs to a list of integers"""
+        return [int(str_id) for str_id in qs.split(",")]
 
     def get_queryset(self):
         is_active = self.request.query_params.get("is_active")
@@ -30,7 +36,8 @@ class BorrowingListView(viewsets.ModelViewSet):
             queryset = queryset.filter(user=self.request.user)
 
         if user_id:
-            queryset = queryset.filter(user_id=user_id)
+            users_ids = self._params_to_ints(user_id)
+            queryset = queryset.filter(user_id__in=users_ids)
 
         if is_active:
             is_active = is_active.lower() == "true"
@@ -64,3 +71,20 @@ class BorrowingListView(viewsets.ModelViewSet):
         borrowing.save()
         serializer = self.get_serializer(borrowing)
         return Response(serializer.data)
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "user_id",
+                type={"type": "list", "items": {"type": "number"}},
+                description="Fiter by user id",
+            ),
+            OpenApiParameter(
+                "is_active",
+                type={"type": "boolean"},
+                description="Filter by borrowing status",
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
