@@ -169,7 +169,7 @@ class BorrowingViewTests(TestCase):
         response = self.client.get(self.BORROWING_URL, {"user_id": self.user.id})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         serializer = BorrowingListSerializer(
-            Borrowing.objects.filter(user=self.admin_user), many=True
+            Borrowing.objects.filter(user=self.user), many=True
         )
         self.assertEqual(response.data, serializer.data)
 
