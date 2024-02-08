@@ -71,3 +71,20 @@ class BorrowingListView(viewsets.ModelViewSet):
         borrowing.save()
         serializer = self.get_serializer(borrowing)
         return Response(serializer.data)
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "user_id",
+                type={"type": "list", "items": {"type": "number"}},
+                description="Fiter by user id",
+            ),
+            OpenApiParameter(
+                "is_active",
+                type={"type": "boolean"},
+                description="Filter by borrowing status",
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
