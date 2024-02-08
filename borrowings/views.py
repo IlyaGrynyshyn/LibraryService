@@ -1,20 +1,21 @@
 from django.db import transaction
 from django.utils import timezone
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from borrowings.models import Borrowing
+from borrowings.permissions import IsAdminUserOrReadAndCreateOnly
 from borrowings.serializers import (
     BorrowingDetailSerializer,
     BorrowingListSerializer,
 )
-from books.permissions import IsAdminUserOrReadOnly
 
 
 class BorrowingListView(viewsets.ModelViewSet):
     queryset = Borrowing.objects.all()
-    permission_classes = [IsAdminUserOrReadOnly]
+    permission_classes = [IsAdminUserOrReadAndCreateOnly]
 
     def get_serializer_class(self):
         if self.action == "retrieve":
