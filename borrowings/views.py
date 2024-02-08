@@ -6,7 +6,6 @@ from rest_framework.response import Response
 
 from borrowings.models import Borrowing
 from borrowings.serializers import (
-    BorrowingSerializer,
     BorrowingDetailSerializer,
     BorrowingListSerializer,
 )
@@ -15,7 +14,7 @@ from books.permissions import IsAdminUserOrReadOnly
 
 class BorrowingListView(viewsets.ModelViewSet):
     queryset = Borrowing.objects.all()
-    permission_classes = [BorrowingListSerializer]
+    permission_classes = [IsAdminUserOrReadOnly]
 
     def get_serializer_class(self):
         if self.action == "retrieve":
@@ -49,6 +48,7 @@ class BorrowingListView(viewsets.ModelViewSet):
         methods=["POST"],
         url_path="return",
         permission_classes=[permissions.IsAdminUser],
+        url_name="return",
     )
     @transaction.atomic
     def return_borrowing(self, request, pk=None):
